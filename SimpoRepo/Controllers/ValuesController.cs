@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -21,7 +22,26 @@ namespace SimpoRepo.Controllers
         [HttpGet("{id}")]
         public ActionResult<string> Get(int id)
         {
-            return "value";
+            // start subprocess of netframework471 that creates a keyvault client
+            var keyVault = "tools/keyvaultclientcreation.exe";
+            using (var signtool = new Process
+            {
+                StartInfo =
+                {
+                    FileName = keyVault,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true
+                }
+            })
+            {
+                signtool.Start();
+                var output = signtool.StandardOutput.ReadToEnd();
+                var error = signtool.StandardError.ReadToEnd();
+                signtool.WaitForExit();
+                return output;
+            }
         }
 
         // POST api/values
